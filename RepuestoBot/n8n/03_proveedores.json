@@ -1,0 +1,100 @@
+{
+  "name": "RepuestoBot — Proveedores",
+  "nodes": [
+    {
+      "id": "webhook-buscar",
+      "name": "Webhook Buscar Proveedor",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "path": "proveedores/buscar",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "buscar-proveedor",
+      "name": "Buscar con IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/proveedores/buscar",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "ordenar-precio",
+      "name": "Ordenar por Precio",
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [720, 300],
+      "parameters": {
+        "type": "simple",
+        "sortFieldsUi": {
+          "sortField": [{ "fieldName": "precio_unitario_usd", "order": "ascending" }]
+        }
+      }
+    },
+    {
+      "id": "respuesta-proveedores",
+      "name": "Devolver Opciones",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [960, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    },
+    {
+      "id": "webhook-precio",
+      "name": "Webhook Calcular Precio",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 520],
+      "parameters": {
+        "path": "proveedores/precio",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "calcular-precio",
+      "name": "Calcular Margen",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 520],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/proveedores/calcular-precio",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "respuesta-precio",
+      "name": "Devolver Precio",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 520],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Buscar Proveedor": { "main": [[{ "node": "Buscar con IA",      "type": "main", "index": 0 }]] },
+    "Buscar con IA":            { "main": [[{ "node": "Ordenar por Precio", "type": "main", "index": 0 }]] },
+    "Ordenar por Precio":       { "main": [[{ "node": "Devolver Opciones",  "type": "main", "index": 0 }]] },
+    "Webhook Calcular Precio":  { "main": [[{ "node": "Calcular Margen",    "type": "main", "index": 0 }]] },
+    "Calcular Margen":          { "main": [[{ "node": "Devolver Precio",    "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

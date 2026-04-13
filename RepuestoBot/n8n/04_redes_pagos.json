@@ -1,0 +1,125 @@
+{
+  "name": "RepuestoBot — Redes y Pagos",
+  "nodes": [
+    {
+      "id": "webhook-redes",
+      "name": "Webhook Generar Contenido",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "path": "redes/generar",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "generar-contenido",
+      "name": "Generar con Claude",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/redes/generar",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "respuesta-redes",
+      "name": "Devolver Contenido",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    },
+    {
+      "id": "webhook-cobro",
+      "name": "Webhook Registrar Cobro",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 520],
+      "parameters": {
+        "path": "pagos/cobro",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "registrar-cobro",
+      "name": "Registrar en DB",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 520],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/pagos/registrar",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "respuesta-cobro",
+      "name": "Devolver Cobro",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 520],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    },
+    {
+      "id": "webhook-verificar-pago",
+      "name": "Webhook Verificar Comprobante",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 740],
+      "parameters": {
+        "path": "pagos/verificar",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "verificar-comprobante",
+      "name": "Analizar Comprobante",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 740],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/pagos/verificar",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "respuesta-comprobante",
+      "name": "Devolver Análisis",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 740],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Generar Contenido":    { "main": [[{ "node": "Generar con Claude",   "type": "main", "index": 0 }]] },
+    "Generar con Claude":           { "main": [[{ "node": "Devolver Contenido",   "type": "main", "index": 0 }]] },
+    "Webhook Registrar Cobro":      { "main": [[{ "node": "Registrar en DB",      "type": "main", "index": 0 }]] },
+    "Registrar en DB":              { "main": [[{ "node": "Devolver Cobro",       "type": "main", "index": 0 }]] },
+    "Webhook Verificar Comprobante":{ "main": [[{ "node": "Analizar Comprobante", "type": "main", "index": 0 }]] },
+    "Analizar Comprobante":         { "main": [[{ "node": "Devolver Análisis",    "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

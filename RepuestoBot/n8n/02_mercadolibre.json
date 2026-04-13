@@ -1,0 +1,168 @@
+{
+  "name": "RepuestoBot — MercadoLibre",
+  "nodes": [
+    {
+      "id": "webhook-publicar",
+      "name": "Webhook Nueva Publicación",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "path": "ml/publicar",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "crear-publicacion",
+      "name": "Crear Publicación",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/mercadolibre/publicaciones",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "respuesta-pub",
+      "name": "Respuesta Publicación",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 300],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    },
+    {
+      "id": "webhook-pago",
+      "name": "Webhook Verificar Pago",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 520],
+      "parameters": {
+        "path": "ml/verificar-pago",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "verificar-pago",
+      "name": "Verificar Pago con Vision",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 520],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/mercadolibre/verificar-pago",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "pago-aprobado",
+      "name": "¿Pago Aprobado?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 520],
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.coincide }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "pago-ok",
+      "name": "Pago Confirmado",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [960, 420],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "estado", "value": "confirmado", "type": "string" },
+            { "name": "monto",  "value": "={{ $json.monto_detectado }}", "type": "number" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "pago-rechazado",
+      "name": "Pago Rechazado",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [960, 620],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "estado", "value": "rechazado", "type": "string" },
+            { "name": "razon",  "value": "={{ $json.observaciones }}", "type": "string" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "webhook-vin",
+      "name": "Webhook Decodificar VIN",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 760],
+      "parameters": {
+        "path": "ml/vin",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "decodificar-vin",
+      "name": "Decodificar VIN",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 760],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/mercadolibre/vin",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "respuesta-vin",
+      "name": "Respuesta VIN",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 760],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Nueva Publicación": { "main": [[{ "node": "Crear Publicación",       "type": "main", "index": 0 }]] },
+    "Crear Publicación":         { "main": [[{ "node": "Respuesta Publicación",   "type": "main", "index": 0 }]] },
+    "Webhook Verificar Pago":    { "main": [[{ "node": "Verificar Pago con Vision","type": "main", "index": 0 }]] },
+    "Verificar Pago con Vision": { "main": [[{ "node": "¿Pago Aprobado?",         "type": "main", "index": 0 }]] },
+    "¿Pago Aprobado?": {
+      "main": [
+        [{ "node": "Pago Confirmado", "type": "main", "index": 0 }],
+        [{ "node": "Pago Rechazado",  "type": "main", "index": 0 }]
+      ]
+    },
+    "Webhook Decodificar VIN": { "main": [[{ "node": "Decodificar VIN",  "type": "main", "index": 0 }]] },
+    "Decodificar VIN":         { "main": [[{ "node": "Respuesta VIN",    "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

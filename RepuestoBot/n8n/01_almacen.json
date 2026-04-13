@@ -1,0 +1,163 @@
+{
+  "name": "RepuestoBot — Almacén",
+  "nodes": [
+    {
+      "id": "webhook-entrada",
+      "name": "Webhook Entrada",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "parameters": {
+        "path": "almacen/entrada",
+        "httpMethod": "POST",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "registrar-entrada",
+      "name": "Registrar Entrada",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8000/almacen/entradas",
+        "sendBody": true,
+        "contentType": "json",
+        "body": "={{ $json.body }}"
+      }
+    },
+    {
+      "id": "check-alerta",
+      "name": "¿Hay alerta de stock?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [720, 300],
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.alerta }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "alerta-stock",
+      "name": "Notificar Alerta Stock",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3,
+      "position": [960, 200],
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            { "name": "mensaje", "value": "={{ $json.alerta }}", "type": "string" },
+            { "name": "nivel", "value": "alerta", "type": "string" }
+          ]
+        }
+      }
+    },
+    {
+      "id": "respuesta-ok",
+      "name": "Respuesta OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [960, 400],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    },
+    {
+      "id": "webhook-buscar",
+      "name": "Webhook Buscar Pieza",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 560],
+      "parameters": {
+        "path": "almacen/buscar",
+        "httpMethod": "GET",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "buscar-pieza",
+      "name": "Buscar en API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 560],
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8000/almacen/piezas/buscar",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [{ "name": "q", "value": "={{ $json.query.q }}" }]
+        }
+      }
+    },
+    {
+      "id": "respuesta-busqueda",
+      "name": "Devolver Resultados",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 560],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    },
+    {
+      "id": "webhook-alertas",
+      "name": "Webhook Ver Alertas",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 780],
+      "parameters": {
+        "path": "almacen/alertas",
+        "httpMethod": "GET",
+        "responseMode": "responseNode"
+      }
+    },
+    {
+      "id": "get-alertas",
+      "name": "Obtener Alertas",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [480, 780],
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:8000/almacen/alertas"
+      }
+    },
+    {
+      "id": "respuesta-alertas",
+      "name": "Devolver Alertas",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 780],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Entrada":       { "main": [[{ "node": "Registrar Entrada",    "type": "main", "index": 0 }]] },
+    "Registrar Entrada":     { "main": [[{ "node": "¿Hay alerta de stock?","type": "main", "index": 0 }]] },
+    "¿Hay alerta de stock?": {
+      "main": [
+        [{ "node": "Notificar Alerta Stock", "type": "main", "index": 0 }],
+        [{ "node": "Respuesta OK",           "type": "main", "index": 0 }]
+      ]
+    },
+    "Webhook Buscar Pieza":  { "main": [[{ "node": "Buscar en API",       "type": "main", "index": 0 }]] },
+    "Buscar en API":         { "main": [[{ "node": "Devolver Resultados", "type": "main", "index": 0 }]] },
+    "Webhook Ver Alertas":   { "main": [[{ "node": "Obtener Alertas",     "type": "main", "index": 0 }]] },
+    "Obtener Alertas":       { "main": [[{ "node": "Devolver Alertas",    "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}
