@@ -59,6 +59,11 @@ def estado_sistema() -> list:
             f"[white]Contenido guardado:[/white] [cyan]{len(redes_pubs)}[/cyan]",
             title="[bold]Redes Sociales[/bold]", box=box.ROUNDED, style="magenta"
         ),
+        Panel(
+            f"[white]Cobros pendientes:[/white] [{'yellow' if pagos else 'green'}]{len(pagos)}[/{'yellow' if pagos else 'green'}]\n"
+            f"[white]Métodos:[/white]           Zelle · Binance · PagoMóvil",
+            title="[bold]Pagos VE[/bold]", box=box.ROUNDED, style="green"
+        ),
     ]
     return tarjetas
 
@@ -83,6 +88,7 @@ def main():
         console.print("  [bold yellow]2.[/bold yellow] Bot MercadoLibre   [dim]— publicaciones, pagos, VIN[/dim]")
         console.print("  [bold blue]3.[/bold blue] Bot Proveedores    [dim]— búsqueda y comparación[/dim]")
         console.print("  [bold magenta]4.[/bold magenta] Bot Redes Sociales [dim]— contenido IA para redes[/dim]")
+        console.print("  [bold green]5.[/bold green] Pagos Venezuela    [dim]— Zelle, Binance, Pago Móvil[/dim]")
         console.print("  [bold]0.[/bold] Salir\n")
 
         op = input("  Opción: ").strip()
@@ -99,6 +105,9 @@ def main():
         elif op == "4":
             from bot_redes_sociales.main import main as redes_main
             redes_main()
+        elif op == "5":
+            from shared.pagos.main import main as pagos_main
+            pagos_main()
         elif op == "0":
             console.print("\n  [dim]Hasta luego.[/dim]\n")
             break
