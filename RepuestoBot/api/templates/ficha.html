@@ -280,6 +280,49 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .desc-text { font-size: 0.78rem; color: #ccc; line-height: 1.6; }
+
+  .links-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+
+  .link-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: #0e0e0e;
+    text-decoration: none;
+    transition: border-color 0.15s, background 0.15s;
+    cursor: pointer;
+  }
+  .link-btn:hover { border-color: var(--accent); background: #1a1200; }
+  .link-btn-name { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--accent); letter-spacing: 1px; }
+  .link-btn-desc { font-size: 0.65rem; color: var(--muted); }
+  .link-btn-vin  { font-family: 'IBM Plex Mono', monospace; font-size: 0.6rem; color: #333; margin-top: 2px; }
+  .vin-copy {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #0e0e0e;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-bottom: 10px;
+  }
+  .vin-copy span { font-family: 'IBM Plex Mono', monospace; font-size: 0.75rem; color: var(--text); flex: 1; }
+  .btn-copy {
+    padding: 4px 10px;
+    background: #1a1200;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .btn-copy:hover { background: var(--accent); color: #000; }
+  .links-card { display: none; }
+  .vin-copy-bar { display: none; }
 </style>
 </head>
 <body>
@@ -347,6 +390,57 @@
         <div class="step"><div class="step-dot" id="d6"></div><div class="step-text" id="s6">Consultar Chevrolet / Ford</div></div>
         <div class="step"><div class="step-dot" id="d7"></div><div class="step-text" id="s7">Comparar precios y calcular margen</div></div>
         <div class="step"><div class="step-dot" id="d8"></div><div class="step-text" id="s8">Generar ficha completa</div></div>
+      </div>
+    </div>
+
+    <!-- LINKS OFICIALES -->
+    <div class="card links-card" id="linksOficiales">
+      <div class="card-title">Buscar en Sitios Oficiales</div>
+      <div class="vin-copy vin-copy-bar" id="vinCopyBar">
+        <span id="vinCopyText"></span>
+        <button type="button" class="btn-copy" onclick="copiarVIN()">COPIAR VIN</button>
+      </div>
+      <div class="links-grid">
+        <a class="link-btn" id="link-rockauto" href="https://www.rockauto.com" target="_blank" rel="noopener">
+          <span class="link-btn-name">ROCKAUTO</span>
+          <span class="link-btn-desc">Catálogo mayorista — mejor precio</span>
+          <span class="link-btn-vin" id="lbl-rockauto">rockauto.com</span>
+        </a>
+        <a class="link-btn" id="link-toyota" href="https://parts.toyota.com" target="_blank" rel="noopener">
+          <span class="link-btn-name">TOYOTA PARTS</span>
+          <span class="link-btn-desc">Piezas OEM Toyota / Lexus</span>
+          <span class="link-btn-vin" id="lbl-toyota">parts.toyota.com</span>
+        </a>
+        <a class="link-btn" id="link-gm" href="https://www.gmpartsonline.net" target="_blank" rel="noopener">
+          <span class="link-btn-name">GM PARTS</span>
+          <span class="link-btn-desc">Chevrolet · Buick · GMC · Cadillac</span>
+          <span class="link-btn-vin" id="lbl-gm">gmpartsonline.net</span>
+        </a>
+        <a class="link-btn" id="link-ford" href="https://parts.ford.com" target="_blank" rel="noopener">
+          <span class="link-btn-name">FORD PARTS</span>
+          <span class="link-btn-desc">Piezas OEM Ford / Lincoln</span>
+          <span class="link-btn-vin" id="lbl-ford">parts.ford.com</span>
+        </a>
+        <a class="link-btn" href="https://www.napaonline.com" target="_blank" rel="noopener">
+          <span class="link-btn-name">NAPA AUTO PARTS</span>
+          <span class="link-btn-desc">Amplio catálogo — envío rápido</span>
+          <span class="link-btn-vin">napaonline.com</span>
+        </a>
+        <a class="link-btn" href="https://www.autozone.com" target="_blank" rel="noopener">
+          <span class="link-btn-name">AUTOZONE</span>
+          <span class="link-btn-desc">Piezas y accesorios</span>
+          <span class="link-btn-vin">autozone.com</span>
+        </a>
+        <a class="link-btn" href="https://www.oreillyauto.com" target="_blank" rel="noopener">
+          <span class="link-btn-name">O'REILLY AUTO</span>
+          <span class="link-btn-desc">Repuestos y herramientas</span>
+          <span class="link-btn-vin">oreillyauto.com</span>
+        </a>
+        <a class="link-btn" id="link-nhtsa" href="https://vpic.nhtsa.dot.gov/decoder/Decoder" target="_blank" rel="noopener">
+          <span class="link-btn-name">NHTSA VIN DECODER</span>
+          <span class="link-btn-desc">Decodificador oficial del gobierno USA</span>
+          <span class="link-btn-vin" id="lbl-nhtsa">vpic.nhtsa.dot.gov</span>
+        </a>
       </div>
     </div>
 
@@ -538,8 +632,49 @@
 
     document.getElementById('fichaOutput').classList.remove('hidden');
     document.getElementById('statusBar').textContent = '✓ Ficha completa — lista para Mercado Libre';
+    actualizarLinks(vin, data.codigo || codigo);
     btn.disabled = false;
     btn.textContent = 'GENERAR NUEVA FICHA';
+  }
+
+  function actualizarLinks(vin, codigo) {
+    const seccion = document.getElementById('linksOficiales');
+    seccion.classList.remove('links-card');
+
+    if (vin) {
+      const bar = document.getElementById('vinCopyBar');
+      bar.classList.remove('vin-copy-bar');
+      document.getElementById('vinCopyText').textContent = 'VIN: ' + vin;
+
+      const ra = document.getElementById('link-rockauto');
+      ra.href = `https://www.rockauto.com/en/partsearch/?parttype=0&vin=${vin}`;
+      document.getElementById('lbl-rockauto').textContent = 'Buscar VIN: ' + vin;
+
+      const tp = document.getElementById('link-toyota');
+      tp.href = `https://parts.toyota.com/p/Toyota___/search?term=${vin}`;
+      document.getElementById('lbl-toyota').textContent = 'Buscar VIN: ' + vin;
+
+      const gm = document.getElementById('link-gm');
+      gm.href = `https://www.gmpartsonline.net/vin-lookup?vin=${vin}`;
+      document.getElementById('lbl-gm').textContent = 'Buscar VIN: ' + vin;
+
+      const fp = document.getElementById('link-ford');
+      fp.href = `https://parts.ford.com/en/search-results.html?q=${vin}`;
+      document.getElementById('lbl-ford').textContent = 'Buscar VIN: ' + vin;
+
+      const nhtsa = document.getElementById('link-nhtsa');
+      nhtsa.href = `https://vpic.nhtsa.dot.gov/decoder/Decoder?VIN=${vin}`;
+      document.getElementById('lbl-nhtsa').textContent = 'Decodificar: ' + vin;
+    }
+  }
+
+  function copiarVIN() {
+    const vin = document.getElementById('vinInput').value.trim().toUpperCase();
+    if (!vin) return;
+    navigator.clipboard.writeText(vin);
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✓ COPIADO';
+    setTimeout(() => { btn.textContent = 'COPIAR VIN'; }, 1500);
   }
 </script>
 </body>
