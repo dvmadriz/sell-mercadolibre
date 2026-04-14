@@ -194,6 +194,50 @@ def todas_las_piezas() -> list[dict]:
     return [_row_to_dict(r) for r in rows]
 
 
+def resumen_cobros_hoy() -> dict:
+    conn = get_connection()
+    hoy = datetime.now().strftime("%Y-%m-%d")
+    row = conn.execute("""
+        SELECT
+            COALESCE(SUM(CASE WHEN estado='confirmado' THEN monto ELSE 0 END), 0) AS confirmado_total,
+            COALESCE(SUM(CASE WHEN estado='pendiente'  THEN monto ELSE 0 END), 0) AS pendiente_total,
+            COUNT(CASE WHEN estado='confirmado' THEN 1 END) AS confirmados,
+            COUNT(CASE WHEN estado='pendiente'  THEN 1 END) AS pendientes
+        FROM pagos
+        WHERE fecha LIKE ?
+    """, (f"{hoy}%",)).fetchone()
+    conn.close()
+    return dict(row)
+
+
+def movimientos_hoy() -> dict:
+    conn = get_connection()
+    hoy = datetime.now().strftime("%Y-%m-%d")
+    row = conn.execute("""
+        SELECT
+            COALESCE(SUM(CASE WHEN tipo='entrada' THEN cantidad ELSE 0 END), 0) AS entradas,
+            COALESCE(SUM(CASE WHEN tipo='salida'  THEN cantidad ELSE 0 END), 0) AS salidas,
+            COALESCE(SUM(CASE WHEN tipo='salida'  THEN cantidad * precio ELSE 0 END), 0) AS vendido_hoy
+        FROM movimientos
+        WHERE fecha LIKE ?
+    """, (f"{hoy}%",)).fetchone()
+    conn.close()
+    return dict(row)
+
+
+def valor_total_inventario() -> dict:
+    conn = get_connection()
+    row = conn.execute("""
+        SELECT
+            COALESCE(SUM(stock * precio_costo), 0)  AS costo_total,
+            COALESCE(SUM(stock * precio_venta), 0)  AS venta_total,
+            COALESCE(SUM(stock), 0)                 AS unidades_total
+        FROM piezas
+    """).fetchone()
+    conn.close()
+    return dict(row)
+
+
 def piezas_bajo_minimo() -> list[dict]:
     conn = get_connection()
     rows = conn.execute(
