@@ -154,6 +154,11 @@
     .msg-err { color: #f87171; font-size: 0.85rem; padding: 6px 0; }
 
     footer { text-align: center; color: #333; font-size: 0.75rem; margin-top: 32px; }
+
+    .vin-form input  { width: 260px; }
+    .vin-resultado   { margin-top: 16px; background: #0f0f0f; border: 1px solid #222; border-radius: 8px; padding: 16px; }
+    .vin-compat-title{ margin-top: 8px; }
+    .acciones-vin    { margin-top: 0; }
   </style>
 </head>
 <body>
@@ -334,6 +339,45 @@
   </table>
   {% else %}
   <p class="dim">Sin piezas{% if busqueda %} para "{{ busqueda }}"{% endif %}.</p>
+  {% endif %}
+</div>
+
+<!-- Decodificador VIN -->
+<div class="acciones acciones-vin">
+  <h2>Decodificador VIN</h2>
+  <form method="get" action="/dashboard/vin" class="vin-form">
+    <div>
+      <label>VIN (17 caracteres)</label>
+      <input name="vin" placeholder="Ej: 1HGCM82633A004352" maxlength="17">
+    </div>
+    <button class="btn btn-cyan" type="submit">Decodificar</button>
+  </form>
+
+  {% if vin_resultado %}
+  <div class="vin-resultado">
+    {% if vin_resultado.valido %}
+    <div class="stat"><span class="stat-label">Marca</span>          <span class="stat-value cyan">{{ vin_resultado.marca }}</span></div>
+    <div class="stat"><span class="stat-label">Modelo</span>         <span class="stat-value cyan">{{ vin_resultado.modelo }}</span></div>
+    <div class="stat"><span class="stat-label">Año</span>            <span class="stat-value cyan">{{ vin_resultado.anio }}</span></div>
+    <div class="stat"><span class="stat-label">Motor</span>          <span class="stat-value cyan">{{ vin_resultado.motor }}</span></div>
+    <div class="stat"><span class="stat-label">País fabricación</span><span class="stat-value dim">{{ vin_resultado.pais_fabricacion }}</span></div>
+    <div class="stat"><span class="stat-label">Tipo</span>           <span class="stat-value dim">{{ vin_resultado.tipo_vehiculo }}</span></div>
+    {% if piezas_vin %}
+    <hr class="divider">
+    <div class="dim vin-compat-title">Piezas compatibles en inventario:</div>
+    {% for p in piezas_vin %}
+    <div class="stat">
+      <span class="cyan">{{ p.codigo }} — {{ p.nombre }}</span>
+      <span class="stat-value {{ 'red' if p.stock <= p.stock_minimo else 'green' }}">{{ p.stock }} unid.</span>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="dim vin-compat-title">Sin piezas compatibles en inventario.</div>
+    {% endif %}
+    {% else %}
+    <p class="red">VIN inválido o no reconocido.</p>
+    {% endif %}
+  </div>
   {% endif %}
 </div>
 

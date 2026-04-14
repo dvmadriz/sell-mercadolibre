@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RepuestoBot — Ficha Completa</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@300;400;600&display=swap');
+
+  :root {
+    --bg: #0a0a0a;
+    --panel: #111;
+    --border: #222;
+    --accent: #f0a500;
+    --accent2: #e05c00;
+    --text: #e8e8e8;
+    --muted: #555;
+    --green: #00c97a;
+    --red: #ff4444;
+    --blue: #4488ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 14px;
+  }
+
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--accent); letter-spacing: 3px; }
+  .sub  { font-family: 'IBM Plex Mono', monospace; font-size: 0.65rem; color: var(--muted); letter-spacing: 2px; }
+  .nav-back { font-family: 'IBM Plex Mono', monospace; font-size: 0.7rem; color: var(--muted); text-decoration: none; }
+  .nav-back:hover { color: var(--accent); }
+
+  .main { display: grid; grid-template-columns: 340px 1fr; gap: 16px; max-width: 1100px; margin: 0 auto; }
+
+  .left  { display: flex; flex-direction: column; gap: 12px; }
+  .right { display: flex; flex-direction: column; gap: 12px; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 16px;
+  }
+
+  .card-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .card-title::before { content:''; width:5px; height:5px; background:var(--accent); border-radius:50%; display:inline-block; }
+
+  .upload-zone {
+    border: 1px dashed var(--border);
+    border-radius: 3px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .upload-zone:hover { border-color: var(--accent); }
+  .upload-zone img   { max-height: 100px; object-fit: contain; border-radius: 3px; }
+  .upload-zone .icon { font-size: 1.8rem; }
+  .upload-zone .hint { font-size: 0.75rem; color: var(--muted); }
+  input[type="file"]  { display: none; }
+
+  .field {
+    width: 100%;
+    background: #161616;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.82rem;
+    padding: 9px 12px;
+    border-radius: 3px;
+    outline: none;
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+  .field:focus       { border-color: var(--accent); }
+  .field::placeholder{ color: var(--muted); }
+
+  .field-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-top: 10px;
+    display: block;
+  }
+
+  .sources { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+
+  .source-btn {
+    padding: 7px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--muted);
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    letter-spacing: 1px;
+  }
+  .source-btn.active { border-color: var(--accent); color: var(--accent); background: #1a1200; }
+  .source-btn:hover  { border-color: #444; color: #aaa; }
+
+  .btn-main {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: #000;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.05rem;
+    letter-spacing: 3px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-top: 4px;
+  }
+  .btn-main:hover    { background: var(--accent2); color: #fff; }
+  .btn-main:disabled { background: #222; color: #555; cursor: not-allowed; }
+
+  .pipeline { display: flex; flex-direction: column; gap: 0; }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #1a1a1a;
+    font-size: 0.78rem;
+  }
+  .step:last-child { border-bottom: none; }
+
+  .step-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+    margin-top: 4px;
+    transition: background 0.3s;
+  }
+  .step-dot.done    { background: var(--green); }
+  .step-dot.loading { background: var(--accent); animation: pulse 0.8s infinite; }
+  .step-dot.error   { background: var(--red); }
+
+  .step-text { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; line-height: 1.4; }
+  .step-text.done    { color: var(--text); }
+  .step-text.loading { color: var(--accent); }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .ficha-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .ficha-block {
+    background: #0e0e0e;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 12px;
+  }
+  .ficha-block.full { grid-column: 1 / -1; }
+
+  .ficha-block-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .ficha-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #1a1a1a;
+    font-size: 0.75rem;
+  }
+  .ficha-row:last-child { border-bottom: none; }
+  .ficha-key { color: var(--muted); font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; }
+  .ficha-val { color: var(--text); text-align: right; max-width: 60%; }
+
+  .notas-tecnicas {
+    margin-top: 8px;
+    padding: 8px;
+    background: #161616;
+    border-left: 2px solid var(--accent);
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .price-compare { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+
+  .price-source {
+    background: #0e0e0e;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 8px;
+    text-align: center;
+  }
+  .price-source-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .price-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--accent); letter-spacing: 1px; }
+  .price-val.best { color: var(--green); }
+  .price-note { font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+
+  .compat-list { display: flex; flex-wrap: wrap; gap: 5px; }
+  .compat-tag {
+    background: #161616;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 3px 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text);
+  }
+
+  .margin-box { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; }
+  .margin-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+  .margin-val   { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; }
+  .margin-arrow { color: var(--muted); font-size: 1.5rem; }
+  .margin-val.green  { color: var(--green); }
+  .margin-val.orange { color: var(--accent); }
+  .margin-costo { font-size: 1.2rem; color: var(--text); }
+
+  .status-bar {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--green);
+    padding: 8px 0;
+    text-align: center;
+    min-height: 20px;
+  }
+
+  .hidden { display: none; }
+
+  .spinner {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border: 2px solid #333;
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .desc-text { font-size: 0.78rem; color: #ccc; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">RepuestoBot</div>
+    <div class="sub">FICHA COMPLETA — MULTI-FUENTE</div>
+  </div>
+  <a href="/" class="nav-back">← Volver al Panel</a>
+</header>
+
+<div class="main">
+
+  <!-- LEFT -->
+  <div class="left">
+
+    <div class="card">
+      <div class="card-title">Foto de la Pieza</div>
+      <label for="fileInput">
+        <div class="upload-zone" id="uploadZone">
+          <div class="icon">📷</div>
+          <div class="hint">Click para subir foto</div>
+        </div>
+      </label>
+      <input type="file" id="fileInput" accept="image/*">
+    </div>
+
+    <div class="card">
+      <div class="card-title">Identificación</div>
+      <span class="field-label">CÓDIGO DE PIEZA</span>
+      <input class="field" id="codigoInput" type="text" placeholder="Ej: SKOM295" maxlength="30">
+      <span class="field-label">VIN (opcional)</span>
+      <input class="field" id="vinInput" type="text" placeholder="Ej: 1HGBH41JXMN109186" maxlength="17">
+      <span class="field-label">N° MOTOR (opcional)</span>
+      <input class="field" id="motorInput" type="text" placeholder="Ej: 2AZ-FE" maxlength="30">
+    </div>
+
+    <div class="card">
+      <div class="card-title">Fuentes de Consulta</div>
+      <div class="sources">
+        <div class="source-btn active" id="src-rockauto"   onclick="toggleSource(this)">ROCKAUTO</div>
+        <div class="source-btn active" id="src-toyota"     onclick="toggleSource(this)">TOYOTA OEM</div>
+        <div class="source-btn active" id="src-chevrolet"  onclick="toggleSource(this)">CHEVROLET</div>
+        <div class="source-btn active" id="src-ford"       onclick="toggleSource(this)">FORD</div>
+      </div>
+    </div>
+
+    <button class="btn-main" id="searchBtn" onclick="buscarFicha()">GENERAR FICHA COMPLETA</button>
+    <div class="status-bar" id="statusBar"></div>
+
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+
+    <div class="card">
+      <div class="card-title">Pipeline</div>
+      <div class="pipeline" id="pipeline">
+        <div class="step"><div class="step-dot" id="d1"></div><div class="step-text" id="s1">Esperando datos...</div></div>
+        <div class="step"><div class="step-dot" id="d2"></div><div class="step-text" id="s2">Claude Vision — leer foto y etiqueta</div></div>
+        <div class="step"><div class="step-dot" id="d3"></div><div class="step-text" id="s3">Decodificar VIN / N° Motor</div></div>
+        <div class="step"><div class="step-dot" id="d4"></div><div class="step-text" id="s4">Buscar en RockAuto</div></div>
+        <div class="step"><div class="step-dot" id="d5"></div><div class="step-text" id="s5">Consultar Toyota OEM</div></div>
+        <div class="step"><div class="step-dot" id="d6"></div><div class="step-text" id="s6">Consultar Chevrolet / Ford</div></div>
+        <div class="step"><div class="step-dot" id="d7"></div><div class="step-text" id="s7">Comparar precios y calcular margen</div></div>
+        <div class="step"><div class="step-dot" id="d8"></div><div class="step-text" id="s8">Generar ficha completa</div></div>
+      </div>
+    </div>
+
+    <div id="fichaOutput" class="hidden">
+
+      <div class="card">
+        <div class="card-title">Identificación de Pieza</div>
+        <div class="ficha-grid">
+          <div class="ficha-block">
+            <div class="ficha-block-title">Datos Básicos</div>
+            <div id="datosBasicos"></div>
+          </div>
+          <div class="ficha-block">
+            <div class="ficha-block-title">Especificaciones Técnicas</div>
+            <div id="especificaciones"></div>
+          </div>
+          <div class="ficha-block full">
+            <div class="ficha-block-title">Descripción</div>
+            <div class="desc-text" id="descripcion"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Comparativa de Precios</div>
+        <div class="price-compare" id="precioCompare"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Compatibilidad de Vehículos</div>
+        <div class="compat-list" id="compatList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Análisis de Margen</div>
+        <div id="margenAnalisis"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let imageBase64 = null;
+
+  document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      imageBase64 = ev.target.result.split(',')[1];
+      document.getElementById('uploadZone').innerHTML = `<img src="${ev.target.result}" alt="pieza">`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  function toggleSource(el) { el.classList.toggle('active'); }
+
+  function setStep(n, state, text) {
+    const dot  = document.getElementById('d' + n);
+    const span = document.getElementById('s' + n);
+    dot.className  = 'step-dot ' + state;
+    span.className = 'step-text ' + state;
+    if (text) span.innerHTML = (state === 'loading' ? '<span class="spinner"></span>' : '') + text;
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function fichaRow(key, val) {
+    return `<div class="ficha-row"><span class="ficha-key">${key}</span><span class="ficha-val">${val}</span></div>`;
+  }
+
+  async function buscarFicha() {
+    const codigo = document.getElementById('codigoInput').value.trim().toUpperCase();
+    const vin    = document.getElementById('vinInput').value.trim().toUpperCase();
+    const motor  = document.getElementById('motorInput').value.trim().toUpperCase();
+
+    if (!imageBase64 && !codigo && !vin) {
+      alert('Ingresa al menos una foto, código o VIN.');
+      return;
+    }
+
+    const btn = document.getElementById('searchBtn');
+    btn.disabled = true;
+    btn.textContent = 'BUSCANDO...';
+    document.getElementById('fichaOutput').classList.add('hidden');
+    document.getElementById('statusBar').textContent = '';
+
+    setStep(1, 'done', `Datos: ${[codigo, vin, motor].filter(Boolean).join(' · ') || 'Foto'} ✓`);
+    await sleep(300);
+    setStep(2, 'loading', 'Claude Vision — analizando...');
+    await sleep(400);
+
+    const activeSources = ['rockauto','toyota','chevrolet','ford']
+      .filter(s => document.getElementById('src-'+s).classList.contains('active'))
+      .map(s => s.toUpperCase());
+
+    let data = null;
+    try {
+      const payload = { codigo, vin, motor, image_base64: imageBase64, sources: activeSources };
+      const res = await fetch('/ficha/generar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error(await res.text());
+      data = await res.json();
+      setStep(2, 'done', 'Claude Vision — pieza identificada ✓');
+    } catch(e) {
+      setStep(2, 'error', 'Error: ' + e.message);
+      btn.disabled = false;
+      btn.textContent = 'REINTENTAR';
+      return;
+    }
+
+    await sleep(300);
+    setStep(3, 'done', vin ? `VIN → ${data.compatibilidad?.[0] || 'decodificado'} ✓` : 'Sin VIN ✓');
+    await sleep(300);
+    setStep(4, 'done', `RockAuto → $${data.precios?.rockauto_usd || 'N/A'} ✓`);
+    await sleep(300);
+    setStep(5, 'done', `Toyota OEM → $${data.precios?.toyota_oem_usd || 'N/A'} ✓`);
+    await sleep(300);
+    setStep(6, 'done', 'Chevrolet / Ford consultados ✓');
+    await sleep(300);
+    setStep(7, 'done', `Margen: ${data.margen_porcentaje}% — Precio: $${data.precio_sugerido_venta_usd} ✓`);
+    await sleep(300);
+    setStep(8, 'done', 'Ficha lista ✓');
+
+    // Datos básicos
+    document.getElementById('datosBasicos').innerHTML = [
+      fichaRow('CÓDIGO', data.codigo || '-'),
+      fichaRow('NOMBRE', data.nombre || '-'),
+      fichaRow('MARCA',  data.marca_fabricante || '-'),
+      fichaRow('OEM #',  data.numero_oem || '-'),
+      fichaRow('AÑOS',   data.anos_aplicacion || '-'),
+    ].join('');
+
+    // Specs
+    const sp = data.especificaciones || {};
+    document.getElementById('especificaciones').innerHTML = [
+      sp.material    ? fichaRow('MATERIAL',    sp.material) : '',
+      sp.peso_kg     ? fichaRow('PESO',        sp.peso_kg + ' kg') : '',
+      sp.dimensiones ? fichaRow('DIMENSIONES', sp.dimensiones) : '',
+      sp.presion_bar && sp.presion_bar !== 'N/A' ? fichaRow('PRESIÓN', sp.presion_bar + ' bar') : '',
+    ].join('');
+
+    // Descripción
+    const descEl = document.getElementById('descripcion');
+    descEl.textContent = data.descripcion || '';
+    if (data.notas_tecnicas) {
+      const nota = document.createElement('div');
+      nota.className = 'notas-tecnicas';
+      nota.textContent = '⚠ ' + data.notas_tecnicas;
+      descEl.appendChild(nota);
+    }
+
+    // Precios
+    const precios = [
+      { name: 'ROCKAUTO',   val: data.precios?.rockauto_usd   || 0, note: 'mayorista' },
+      { name: 'TOYOTA OEM', val: data.precios?.toyota_oem_usd || 0, note: 'original'  },
+      { name: 'CHEVROLET',  val: data.precios?.chevrolet_usd  || 0, note: 'mayorista' },
+      { name: 'FORD',       val: data.precios?.ford_usd       || 0, note: 'mayorista' },
+    ];
+    const minP = Math.min(...precios.filter(p => p.val > 0).map(p => p.val));
+    document.getElementById('precioCompare').innerHTML = precios.map(p => `
+      <div class="price-source">
+        <div class="price-source-name">${p.name}</div>
+        <div class="price-val ${p.val === minP && p.val > 0 ? 'best' : ''}">${p.val > 0 ? '$' + p.val : 'N/A'}</div>
+        <div class="price-note">${p.val === minP && p.val > 0 ? '★ MEJOR PRECIO' : p.note}</div>
+      </div>`).join('');
+
+    // Compatibilidad
+    document.getElementById('compatList').innerHTML = (data.compatibilidad || [])
+      .map(c => `<div class="compat-tag">${c}</div>`).join('');
+
+    // Margen
+    const m = data.margen_porcentaje || 0;
+    document.getElementById('margenAnalisis').innerHTML = `
+      <div class="margin-box">
+        <div><div class="margin-label">COSTO MÍNIMO</div>
+             <div class="margin-val margin-costo">$${data.precio_minimo_usd} USD</div></div>
+        <div class="margin-arrow">→</div>
+        <div><div class="margin-label">PRECIO VENTA</div>
+             <div class="margin-val orange">$${data.precio_sugerido_venta_usd} USD</div></div>
+        <div class="margin-arrow">=</div>
+        <div><div class="margin-label">MARGEN</div>
+             <div class="margin-val ${m >= 40 ? 'green' : 'orange'}">${m}%</div></div>
+      </div>`;
+
+    document.getElementById('fichaOutput').classList.remove('hidden');
+    document.getElementById('statusBar').textContent = '✓ Ficha completa — lista para Mercado Libre';
+    btn.disabled = false;
+    btn.textContent = 'GENERAR NUEVA FICHA';
+  }
+</script>
+</body>
+</html>

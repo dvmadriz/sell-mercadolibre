@@ -25,4 +25,4 @@ if not os.environ.get("ANTHROPIC_API_KEY", "").startswith("sk-"):
 import uvicorn
 print("\n  RepuestoBot API iniciando en http://localhost:8000")
 print("  Documentación: http://localhost:8000/docs\n")
-uvicorn.run("api.app:app", host="0.0.0.0", port=8000, reload=True)
+uvicorn.run("api.app:app", host="0.0.0.0", port=8000, reload=False)

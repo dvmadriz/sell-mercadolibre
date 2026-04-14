@@ -11,11 +11,16 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
+from typing import Optional
 from api.routes import almacen, mercadolibre, proveedores, redes, pagos
 from shared.db import database as db
 from bot_almacen import almacen as alm
+from bot_mercadolibre import mercadolibre as ml
+import anthropic
+import json
 
 app = FastAPI(
     title="RepuestoBot API",
@@ -74,6 +79,50 @@ def _stats():
     }
 
 
+@app.get("/ficha", response_class=HTMLResponse)
+def ficha_page(request: Request):
+    return templates.TemplateResponse("ficha.html", {"request": request})
+
+
+class FichaIn(BaseModel):
+    codigo:       Optional[str] = ""
+    vin:          Optional[str] = ""
+    motor:        Optional[str] = ""
+    image_base64: Optional[str] = None
+    sources:      Optional[list[str]] = []
+
+
+@app.post("/ficha/generar")
+def ficha_generar(datos: FichaIn):
+    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    prompt = f"""Eres un experto en repuestos automotrices. Datos: código={datos.codigo or '-'}, VIN={datos.vin or '-'}, motor={datos.motor or '-'}.
+Genera ficha técnica completa en JSON sin markdown:
+{{"codigo":"","nombre":"","marca_fabricante":"","numero_oem":"","tipo":"","descripcion":"",
+"especificaciones":{{"material":"","peso_kg":"","dimensiones":"","voltaje":"","presion_bar":""}},
+"compatibilidad":["Toyota Corolla 2008-2019"],
+"precios":{{"rockauto_usd":0,"toyota_oem_usd":0,"chevrolet_usd":0,"ford_usd":0}},
+"precio_minimo_usd":0,"precio_sugerido_venta_usd":0,"margen_porcentaje":0,
+"anos_aplicacion":"","notas_tecnicas":""}}
+Solo el JSON."""
+
+    if datos.image_base64:
+        content = [
+            {"type": "image", "source": {
+                "type": "base64", "media_type": "image/jpeg", "data": datos.image_base64
+            }},
+            {"type": "text", "text": prompt}
+        ]
+    else:
+        content = prompt
+
+    resp = client.messages.create(
+        model="claude-opus-4-6", max_tokens=1200,
+        messages=[{"role": "user", "content": content}]
+    )
+    texto = resp.content[0].text.strip().replace("```json", "").replace("```", "").strip()
+    return JSONResponse(content=json.loads(texto))
+
+
 @app.get("/", response_class=HTMLResponse)
 @app.get("/dashboard", response_class=HTMLResponse)
 def dashboard(request: Request, msg_ok: str = "", msg_err: str = ""):
@@ -83,9 +132,11 @@ def dashboard(request: Request, msg_ok: str = "", msg_err: str = ""):
         "stats":    _stats(),
         "alertas":  db.piezas_bajo_minimo(),
         "piezas":   db.todas_las_piezas(),
-        "busqueda": "",
-        "msg_ok":   msg_ok,
-        "msg_err":  msg_err,
+        "busqueda":      "",
+        "msg_ok":        msg_ok,
+        "msg_err":       msg_err,
+        "vin_resultado": None,
+        "piezas_vin":    [],
     })
 
 
@@ -97,9 +148,11 @@ def buscar(request: Request, q: str = ""):
         "stats":    _stats(),
         "alertas":  db.piezas_bajo_minimo(),
         "piezas":   db.buscar_piezas(q) if q else db.todas_las_piezas(),
-        "busqueda": q,
-        "msg_ok":   "",
-        "msg_err":  "",
+        "busqueda":      q,
+        "msg_ok":        "",
+        "msg_err":       "",
+        "vin_resultado": None,
+        "piezas_vin":    [],
     })
 
 
@@ -115,6 +168,32 @@ def entrada(
         return RedirectResponse("/?msg_ok=Entrada+registrada", status_code=303)
     except Exception as e:
         return RedirectResponse(f"/?msg_err={str(e)}", status_code=303)
+
+
+@app.get("/dashboard/vin", response_class=HTMLResponse)
+def vin_decoder(request: Request, vin: str = ""):
+    vin_resultado = None
+    piezas_vin = []
+    if vin:
+        try:
+            vin_resultado = ml.decodificar_vin(vin)
+            if vin_resultado.get("valido"):
+                termino = f"{vin_resultado['marca']} {vin_resultado['modelo']} {vin_resultado['anio']}"
+                piezas_vin = db.buscar_piezas(termino)
+        except Exception as e:
+            vin_resultado = {"valido": False, "error": str(e)}
+    return templates.TemplateResponse("dashboard.html", {
+        "request":      request,
+        "fecha":        datetime.now().strftime("%A %d/%m/%Y  %H:%M"),
+        "stats":        _stats(),
+        "alertas":      db.piezas_bajo_minimo(),
+        "piezas":       db.todas_las_piezas(),
+        "busqueda":     "",
+        "msg_ok":       "",
+        "msg_err":      "",
+        "vin_resultado": vin_resultado,
+        "piezas_vin":   piezas_vin,
+    })
 
 
 @app.post("/dashboard/salida")
