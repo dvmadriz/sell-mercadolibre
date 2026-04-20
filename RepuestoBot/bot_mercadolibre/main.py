@@ -15,32 +15,10 @@ sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
 from shared.db import database as db
+from shared.ui import limpiar, pedir, pedir_numero, tabla_piezas
 from bot_mercadolibre import mercadolibre as ml
 
 console = Console()
-
-
-def limpiar():
-    os.system("cls" if os.name == "nt" else "clear")
-
-
-def pedir(texto: str, requerido: bool = True) -> str:
-    while True:
-        v = input(f"  {texto}: ").strip()
-        if v or not requerido:
-            return v
-        console.print("  [red]Campo requerido.[/red]")
-
-
-def pedir_numero(texto: str, tipo=float, requerido: bool = True):
-    while True:
-        raw = pedir(texto, requerido)
-        if not raw and not requerido:
-            return None
-        try:
-            return tipo(raw)
-        except ValueError:
-            console.print("  [red]Ingresa un número válido.[/red]")
 
 
 def tabla_publicaciones(pubs: list[dict]):
@@ -146,7 +124,7 @@ def menu_verificar_pago():
     console.print(Panel("[bold cyan]Verificar Pago por Foto[/bold cyan]", box=box.ROUNDED))
     ruta = pedir("Ruta de la foto del comprobante")
     monto = pedir_numero("Monto esperado ($)")
-    pieza_id = pedir_numero("ID de la pieza (opcional)", requerido=False)
+    pieza_id = pedir_numero("ID de la pieza (opcional)", tipo=int, requerido=False)
 
     console.print("  [dim]Analizando comprobante con Claude Vision...[/dim]")
     try:
@@ -202,7 +180,6 @@ def menu_decodificar_vin():
                 from shared.db.database import buscar_piezas
                 piezas = buscar_piezas(termino)
                 if piezas:
-                    from bot_almacen.main import tabla_piezas
                     tabla_piezas(piezas, f"Compatibles con {termino}")
                 else:
                     console.print(f"  [dim]Sin piezas para {termino}.[/dim]")

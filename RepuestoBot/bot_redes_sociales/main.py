@@ -15,6 +15,7 @@ sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
 from shared.db import database as db
+from shared.ui import limpiar, pedir
 from bot_redes_sociales import redes
 
 console = Console()
@@ -24,18 +25,6 @@ REDES_COLORES = {
     "facebook":  "blue",
     "tiktok":    "red"
 }
-
-
-def limpiar():
-    os.system("cls" if os.name == "nt" else "clear")
-
-
-def pedir(texto: str, requerido: bool = True) -> str:
-    while True:
-        v = input(f"  {texto}: ").strip()
-        if v or not requerido:
-            return v
-        console.print("  [red]Campo requerido.[/red]")
 
 
 def menu_generar_contenido():

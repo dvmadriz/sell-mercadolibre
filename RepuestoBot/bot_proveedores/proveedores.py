@@ -19,7 +19,7 @@ def buscar_proveedores_ia(pieza: str, cantidad: int = 1) -> list[dict]:
     """
     client = _claude()
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-4-7",
         max_tokens=1024,
         messages=[{"role": "user", "content": f"""
 Eres un experto en compras de repuestos automotrices para revendedores venezolanos.

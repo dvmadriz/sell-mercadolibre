@@ -63,7 +63,7 @@ def verificar_comprobante(ruta_foto: str, metodo: str, monto_esperado: float) ->
     client = _claude()
 
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-4-7",
         max_tokens=512,
         messages=[{"role": "user", "content": [
             {"type": "image", "source": {

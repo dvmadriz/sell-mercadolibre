@@ -44,7 +44,7 @@ Solo el JSON, sin texto adicional."""
 
     client = _get_client()
     mensaje = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-4-7",
         max_tokens=512,
         messages=[{
             "role": "user",

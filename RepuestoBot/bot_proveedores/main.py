@@ -15,32 +15,10 @@ sys.path.insert(0, str(ROOT))
 load_dotenv(ROOT / ".env")
 
 from shared.db import database as db
+from shared.ui import limpiar, pedir, pedir_numero
 from bot_proveedores import proveedores as prov
 
 console = Console()
-
-
-def limpiar():
-    os.system("cls" if os.name == "nt" else "clear")
-
-
-def pedir(texto: str, requerido: bool = True) -> str:
-    while True:
-        v = input(f"  {texto}: ").strip()
-        if v or not requerido:
-            return v
-        console.print("  [red]Campo requerido.[/red]")
-
-
-def pedir_numero(texto: str, tipo=float, requerido: bool = True):
-    while True:
-        raw = pedir(texto, requerido)
-        if not raw and not requerido:
-            return None
-        try:
-            return tipo(raw)
-        except ValueError:
-            console.print("  [red]Ingresa un número válido.[/red]")
 
 
 def menu_buscar_proveedor():

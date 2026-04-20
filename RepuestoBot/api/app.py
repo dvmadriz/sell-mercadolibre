@@ -2,6 +2,7 @@
 API FastAPI — Repuestos Madriz C.A.
 n8n llama a estos endpoints para orquestar los bots.
 """
+import os
 import sys
 import urllib.request
 from pathlib import Path
@@ -51,11 +52,7 @@ def _stats():
     redes_pubs  = db.publicaciones_red()
     publicadas  = sum(1 for p in pubs_ml if p["estado"] == "publicado")
 
-    try:
-        urllib.request.urlopen("http://localhost:8000/", timeout=1)
-        api_activa = True
-    except Exception:
-        api_activa = True  # estamos dentro de la misma API
+    api_activa = True  # siempre True: esta función corre dentro de la API
 
     return {
         "piezas":             len(piezas),
@@ -116,7 +113,7 @@ Solo el JSON."""
         content = prompt
 
     resp = client.messages.create(
-        model="claude-opus-4-6", max_tokens=1200,
+        model="claude-opus-4-7", max_tokens=1200,
         messages=[{"role": "user", "content": content}]
     )
     texto = resp.content[0].text.strip().replace("```json", "").replace("```", "").strip()

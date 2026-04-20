@@ -28,7 +28,7 @@ def generar_contenido(pieza: dict, red: str) -> dict:
     }
 
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-4-7",
         max_tokens=800,
         messages=[{"role": "user", "content": f"""
 Eres community manager de una tienda de repuestos automotrices en Venezuela.

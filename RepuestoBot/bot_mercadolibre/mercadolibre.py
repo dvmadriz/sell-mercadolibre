@@ -55,7 +55,7 @@ Solo el JSON, sin texto adicional.
 """})
 
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-4-7",
         max_tokens=1024,
         messages=[{"role": "user", "content": contenido}]
     )
@@ -66,7 +66,7 @@ def decodificar_vin(vin: str) -> dict:
     """Decodifica un VIN de 17 dígitos usando Claude."""
     client = _claude()
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-4-7",
         max_tokens=512,
         messages=[{"role": "user", "content": f"""
 Decodifica este VIN automotriz: {vin}
@@ -98,7 +98,7 @@ def verificar_pago_foto(ruta_foto: str, monto_esperado: float) -> dict:
             ".png": "image/png"}.get(ext, "image/jpeg")
 
     resp = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-opus-4-7",
         max_tokens=512,
         messages=[{"role": "user", "content": [
             {"type": "image", "source": {"type": "base64", "media_type": mime, "data": datos}},
